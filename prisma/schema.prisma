@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String           @id @default(cuid())
+  createdAt   DateTime         @default(now())
+  messages    GeneratedMessage[]
+  preferences UserPreference?
+  bookmarks   GuideBookmark[]
+}
+
+model GeneratedMessage {
+  id          String   @id @default(cuid())
+  userId      String
+  text        String
+  scenario    String
+  mode        String
+  directness Int      @default(55)
+  score       Int
+  explanation String
+  provider    String   @default("local")
+  createdAt   DateTime @default(now())
+  savedAt     DateTime?
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, savedAt])
+}
+
+model UserPreference {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  mode      String   @default("funny")
+  length    String   @default("medium")
+  directness Int    @default(55)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GuideBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  guideId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, guideId])
+  @@index([userId])
+}
+
+model Guide {
+  id          String          @id
+  title       String
+  category    String
+  description String
+  say         String
+  avoid       String
+  variants    String
+  advice      String
+  scenario    String
+  bookmarks  GuideBookmark[]
+}
