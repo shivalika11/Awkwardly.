@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: awkwardly
+    runtime: node
+    plan: starter
+    region: ohio
+    buildCommand: npm ci --include=dev && npm run db:generate && npm run build
+    startCommand: npm run db:deploy && npm start
+    healthCheckPath: /api/health
+    disk:
+      name: awkwardly-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:/var/data/awkwardly.db
+      - key: SESSION_SECRET
+        generateValue: true

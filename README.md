@@ -50,6 +50,29 @@ npm.cmd start
 
 Set `NODE_ENV=production`, a persistent `DATABASE_URL`, and a `SESSION_SECRET` with at least 32 characters in the deployment environment. Apply migrations with `npm run db:deploy` before starting a release. Serve Awkwardly over HTTPS in production so the session cookie can use its `Secure` flag. The built Express server serves the Vite assets from `dist`.
 
+## Deploy to Render
+
+The checked-in `render.yaml` is a Render Blueprint for the full-stack app. It builds
+the client and server, applies Prisma migrations before start, configures the HTTP
+health check, and stores SQLite at `/var/data/awkwardly.db`.
+
+1. Push this repository to GitHub.
+2. In the [Render Dashboard](https://dashboard.render.com/), choose **New > Blueprint**,
+   connect the GitHub repository, and review the resources and estimated charges before
+   applying the Blueprint.
+3. After the deploy is live, open the `onrender.com` URL shown by Render. The health
+   endpoint is available at `/api/health`.
+
+**This Blueprint is not a free deployment.** Render persistent disks require a paid
+web-service plan. The disk is needed to retain saved messages, bookmarks, and
+preferences between deploys and restarts; without it, SQLite data on the service's
+filesystem is ephemeral. A disk-backed SQLite database supports a single service
+instance. For multi-instance scaling, migrate the Prisma datasource to PostgreSQL.
+
+Render generates `SESSION_SECRET` for the service. `AI_API_KEY` is optional; without
+it, the local template generator remains available. Never commit `.env` or provider
+secrets.
+
 ## Optional AI provider
 
 Without `AI_API_KEY`, message generation uses the local template engine and the UI labels those messages **Thoughtful templates**. No key is required for the app to work.
